@@ -23,5 +23,4 @@ func TestInOut(t *testing.T) {
         t.Fatal(string(resp), "  !=  ", string(input))
     }
 
-    t.Fatal(string(resp))
 }
