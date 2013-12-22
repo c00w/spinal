@@ -51,11 +51,9 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc []byte) []byte {
 						log.Print("Shenanigans")
 					}
 				}
-				// TODO: Figure out why the below doesn't work. "[:]" should make it a slice. :(
-				//x := append([]byte(state.message), byte(edge))[:]
-				n_message := append(state.message, edge...)
-				x := make([]byte, len(n_message))
-				copy(x, n_message)
+                x := make([]byte, 0, n)
+                x = append(x, state.message...)
+                x = append(x, edge...)
 
 				newstates = append(newstates, decodeState{d + state.cost, spline, x})
 			}
