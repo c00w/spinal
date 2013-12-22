@@ -21,7 +21,7 @@ func Encode(k int, h hash.Hash, value []byte, output int) (enc []byte, s [][]byt
         }
 
         h.Write(value[i * k: (i+1)*k])
-        s[i] = h.Sum(nil)
+        s[i] = h.Sum(make([]byte, 0, h.Size()))
     }
 
     rng := make([](*RNG), len(s))

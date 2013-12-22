@@ -40,7 +40,7 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
                 h.Write(state.lastSpline)
                 h.Write(PadBytes(k, edge.Bytes()))
                 //h.Write([]byte{byte(edge)})
-                spline := h.Sum(nil)
+                spline := h.Sum(make([]byte, 0, h.Size()))
                 rng := NewRNG(h, spline)
                 d := uint64(0)
                 for _, c := range rngoutput[i] {

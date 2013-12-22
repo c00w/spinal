@@ -23,7 +23,7 @@ func NewRNG(h hash.Hash, seed []byte) (r *RNG) {
     r = new(RNG)
     r.i = 3610617884
     r.h = h
-    r.buffer = nil
+    r.buffer = make([]byte, 0, h.Size())
     r.seed = seed
     return
 }
@@ -37,7 +37,7 @@ func (r *RNG) Next() (b byte) {
         r.h.Reset()
         r.h.Write(r.seed)
         r.h.Write(uint32tob(r.i))
-        r.buffer = r.h.Sum(nil)
+        r.buffer = r.h.Sum(r.buffer[:0])
         r.i += 3243335647
         return r.Next()
     }
