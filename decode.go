@@ -33,7 +33,7 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
 
         for _, state := range states {
             //log.Print("State: ", state)
-            max := big.NewInt(1 << uint64(8*k))
+            max := big.NewInt(0).Exp(big.NewInt(2),big.NewInt(int64(8*k)), nil)
             for edge := big.NewInt(0); edge.Cmp(max) < 0; edge.Add(edge,big.NewInt(1)) {
                 //log.Printf("Edge #%d", edge)
                 h.Reset()
