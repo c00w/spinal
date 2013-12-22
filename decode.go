@@ -67,6 +67,7 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
 
         for i:=0;i < len(newstates); i += childcount{
             subtrees = append(subtrees, newstates[i:i+childcount])
+            sort.Sort(MinCost(subtrees[len(subtrees)-1]))
         }
 
         sort.Sort(SubTrees(subtrees))

@@ -63,20 +63,7 @@ func (s SubTrees) Swap(i, j int) {
 }
 
 func (s SubTrees) Less(i, j int) bool {
-    min1 := s[i][0].cost
-    for _, c := range s[i] {
-        if c.cost < min1 {
-            min1 = c.cost
-        }
-    }
-
-    min2 := s[j][0].cost
-    for _, c := range s[j] {
-        if c.cost < min2 {
-            min2 = c.cost
-        }
-    }
-    return min1 < min2
+    return s[i][0].cost < s[j][0].cost
 }
 
 type MinCost []decodeState
