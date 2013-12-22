@@ -4,6 +4,7 @@ import (
     "hash"
     "log"
     "sort"
+    "math/big"
 )
 
 func HammingDistance(a byte, b byte) (d byte) {
@@ -62,6 +63,17 @@ func (m MinCost) Less(i, j int) bool {
     return m[i].cost < m[j].cost
 }
 
+func PadBytes(k int, bytes []byte) []byte {
+    if len(bytes) < k {
+        add := k-len(bytes)
+        //var padding [add]byte
+        padding := make([]byte, add)
+        n_bytes := append(padding, bytes...)
+        return n_bytes
+    }
+    return bytes
+}
+
 func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
     blockcount := n/k
 
@@ -80,11 +92,13 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
 
         for _, state := range states {
             //log.Print("State: ", state)
-            for edge := uint64(0); edge < (1 << uint(8*k)); edge++ {
+            max := big.NewInt(1 << uint64(8*k))
+            for edge := big.NewInt(0); edge.Cmp(max) < 0; edge.Add(edge,big.NewInt(1)) {
                 //log.Printf("Edge #%d", edge)
                 h.Reset()
                 h.Write(state.lastSpline)
-                h.Write([]byte{byte(edge)})
+                h.Write(PadBytes(k, edge.Bytes()))
+                //h.Write([]byte{byte(edge)})
                 spline := h.Sum(nil)
                 rng := NewRNG(h, spline)
                 d := uint64(0)
@@ -95,10 +109,11 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
                         log.Print("Shenanigans")
                     }
                 }
-
-                x := make([]byte, len(state.message)+1)
-                copy(x, state.message)
-                x[len(state.message)] = byte(edge)
+                // TODO: Figure out why the below doesn't work. "[:]" should make it a slice. :(
+                //x := append([]byte(state.message), byte(edge))[:]
+                n_message := append(state.message, PadBytes(k, edge.Bytes())...)
+                x := make([]byte, len(n_message))
+                copy(x, n_message)
 
                 newstates = append(newstates, decodeState{d + state.cost, spline, x})
             }
