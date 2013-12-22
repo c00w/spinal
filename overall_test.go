@@ -11,7 +11,7 @@ func TestInOut(t *testing.T) {
 	d := 1
 	B := 4
 	input := []byte("Hello world! My name is betty jone")
-	out, _ := Encode(k, h, input, len(input))
+	out, _ := Encode(k, h, input, len(input)*2)
 	resp := Decode(len(input), k, d, B, h, out)
 
 	if len(resp) != len(input) {
@@ -29,7 +29,7 @@ func TestInOutBigK(t *testing.T) {
 	d := 1
 	B := 4
 	input := []byte("Hello world! My name is betty jone")
-	out, _ := Encode(k, h, input, len(input))
+	out, _ := Encode(k, h, input, len(input)*2)
 	resp := Decode(len(input), k, d, B, h, out)
 
 	if len(resp) != len(input) {
