@@ -1,96 +1,96 @@
 package spinal
 
 import (
-    "hash"
-    "log"
-    "sort"
+	"hash"
+	"log"
+	"sort"
 )
 
 type decodeState struct {
-    cost        uint64
-    lastSpline  []byte
-    message     []byte
+	cost       uint64
+	lastSpline []byte
+	message    []byte
 }
 
-func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
-    blockcount := n/k
+func Decode(n int, k int, d int, B int, h hash.Hash, enc []byte) []byte {
+	blockcount := n / k
 
-    rngoutput := make([][]byte, blockcount)
+	rngoutput := make([][]byte, blockcount)
 
-    for i, c := range enc {
-        rngoutput[i%blockcount] = append(rngoutput[i%blockcount], c)
-    }
+	for i, c := range enc {
+		rngoutput[i%blockcount] = append(rngoutput[i%blockcount], c)
+	}
 
-    states := make([]decodeState, 0, B*d*(1 << 8*k))
-    states = append(states, decodeState{0, make([]byte, h.Size()), nil})
+	states := make([]decodeState, 0, B*d*(1<<8*k))
+	states = append(states, decodeState{0, make([]byte, h.Size()), nil})
 
-    newstates := make([]decodeState, 0, B*d*(1 << 8*k))
+	newstates := make([]decodeState, 0, B*d*(1<<8*k))
 
-    edge := make([]byte, k)
-    bedge := &BufAdd{edge, false}
+	edge := make([]byte, k)
+	bedge := &BufAdd{edge, false}
 
-    log.Print("Starting Decode")
-    for i:= 0; i < len(rngoutput); i++ {
-        log.Printf("#States = %d", len(states))
+	log.Print("Starting Decode")
+	for i := 0; i < len(rngoutput); i++ {
+		log.Printf("#States = %d", len(states))
 
-        for _, state := range states {
-            //log.Print("State: ", state)
-            for bedge.Zero(); !bedge.Max(); bedge.Increment() {
-                //log.Printf("Edge #%d", edge)
-                h.Reset()
-                h.Write(state.lastSpline)
-                h.Write(edge)
-                //h.Write([]byte{byte(edge)})
-                spline := h.Sum(make([]byte, 0, h.Size()))
-                rng := NewRNG(h, spline)
-                d := uint64(0)
-                for _, c := range rngoutput[i] {
-                    n := rng.Next()
-                    d += uint64(HammingDistance(c, n))
-                    if c != n && d == 0 {
-                        log.Print("Shenanigans")
-                    }
-                }
-                // TODO: Figure out why the below doesn't work. "[:]" should make it a slice. :(
-                //x := append([]byte(state.message), byte(edge))[:]
-                n_message := append(state.message, edge...)
-                x := make([]byte, len(n_message))
-                copy(x, n_message)
+		for _, state := range states {
+			//log.Print("State: ", state)
+			for bedge.Zero(); !bedge.Max(); bedge.Increment() {
+				//log.Printf("Edge #%d", edge)
+				h.Reset()
+				h.Write(state.lastSpline)
+				h.Write(edge)
+				//h.Write([]byte{byte(edge)})
+				spline := h.Sum(make([]byte, 0, h.Size()))
+				rng := NewRNG(h, spline)
+				d := uint64(0)
+				for _, c := range rngoutput[i] {
+					n := rng.Next()
+					d += uint64(HammingDistance(c, n))
+					if c != n && d == 0 {
+						log.Print("Shenanigans")
+					}
+				}
+				// TODO: Figure out why the below doesn't work. "[:]" should make it a slice. :(
+				//x := append([]byte(state.message), byte(edge))[:]
+				n_message := append(state.message, edge...)
+				x := make([]byte, len(n_message))
+				copy(x, n_message)
 
-                newstates = append(newstates, decodeState{d + state.cost, spline, x})
-            }
-        }
+				newstates = append(newstates, decodeState{d + state.cost, spline, x})
+			}
+		}
 
-        log.Printf("Exploded to %d newstates", len(newstates))
+		log.Printf("Exploded to %d newstates", len(newstates))
 
-        childcount := 1 << uint(8*k * (d-1))
-        subtrees := make([][]decodeState, 0, len(newstates)/childcount)
+		childcount := 1 << uint(8*k*(d-1))
+		subtrees := make([][]decodeState, 0, len(newstates)/childcount)
 
-        for i:=0;i < len(newstates); i += childcount{
-            subtrees = append(subtrees, newstates[i:i+childcount])
-            sort.Sort(MinCost(subtrees[len(subtrees)-1]))
-        }
+		for i := 0; i < len(newstates); i += childcount {
+			subtrees = append(subtrees, newstates[i:i+childcount])
+			sort.Sort(MinCost(subtrees[len(subtrees)-1]))
+		}
 
-        sort.Sort(SubTrees(subtrees))
+		sort.Sort(SubTrees(subtrees))
 
-        if len(subtrees) > B {
-            if subtrees[B][0].cost == subtrees[B-1][0].cost {
-                log.Print("Subtree collision. This might be a problem")
-            }
-            subtrees = subtrees[0:B]
-        }
+		if len(subtrees) > B {
+			if subtrees[B][0].cost == subtrees[B-1][0].cost {
+				log.Print("Subtree collision. This might be a problem")
+			}
+			subtrees = subtrees[0:B]
+		}
 
-        states = states[:0]
+		states = states[:0]
 
-        for _, tree := range subtrees {
-            states = append(states, tree...)
-        }
-        newstates = newstates[:0]
-    }
+		for _, tree := range subtrees {
+			states = append(states, tree...)
+		}
+		newstates = newstates[:0]
+	}
 
-    sort.Sort(MinCost(states))
+	sort.Sort(MinCost(states))
 
-    log.Print("Final Result:", states[0])
-    return states[0].message
+	log.Print("Final Result:", states[0])
+	return states[0].message
 
 }
