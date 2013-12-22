@@ -4,7 +4,6 @@ import (
     "hash"
     "log"
     "sort"
-    "math/big"
 )
 
 type decodeState struct {
@@ -27,18 +26,20 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
 
     newstates := make([]decodeState, 0, B*d*(1 << 8*k))
 
+    edge := make([]byte, k)
+    bedge := &BufAdd{edge, false}
+
     log.Print("Starting Decode")
     for i:= 0; i < len(rngoutput); i++ {
         log.Printf("#States = %d", len(states))
 
         for _, state := range states {
             //log.Print("State: ", state)
-            max := big.NewInt(0).Exp(big.NewInt(2),big.NewInt(int64(8*k)), nil)
-            for edge := big.NewInt(0); edge.Cmp(max) < 0; edge.Add(edge,big.NewInt(1)) {
+            for bedge.Zero(); !bedge.Max(); bedge.Increment() {
                 //log.Printf("Edge #%d", edge)
                 h.Reset()
                 h.Write(state.lastSpline)
-                h.Write(PadBytes(k, edge.Bytes()))
+                h.Write(edge)
                 //h.Write([]byte{byte(edge)})
                 spline := h.Sum(make([]byte, 0, h.Size()))
                 rng := NewRNG(h, spline)
@@ -52,7 +53,7 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
                 }
                 // TODO: Figure out why the below doesn't work. "[:]" should make it a slice. :(
                 //x := append([]byte(state.message), byte(edge))[:]
-                n_message := append(state.message, PadBytes(k, edge.Bytes())...)
+                n_message := append(state.message, edge...)
                 x := make([]byte, len(n_message))
                 copy(x, n_message)
 

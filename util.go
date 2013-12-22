@@ -4,6 +4,40 @@ import (
     "hash"
 )
 
+type BufAdd struct {
+    b []byte
+    started bool
+}
+
+func (b *BufAdd) Zero() {
+    b.started = false
+    for i, _ := range b.b {
+        b.b[i] = 0
+    }
+}
+
+func (b *BufAdd) Max() bool {
+    if !b.started {
+        return false
+    }
+    for _, c := range b.b {
+        if c != 0 {
+            return false
+        }
+    }
+    return true
+}
+
+func (b *BufAdd) Increment() {
+    b.started = true
+    for i, _ := range b.b {
+        b.b[i] += 1
+        if b.b[i] != 0 {
+            break
+        }
+    }
+}
+
 type RNG struct {
     i    uint32
     seed []byte
@@ -78,15 +112,4 @@ func (m MinCost) Swap(i, j int) {
 
 func (m MinCost) Less(i, j int) bool {
     return m[i].cost < m[j].cost
-}
-
-func PadBytes(k int, bytes []byte) []byte {
-    if len(bytes) < k {
-        add := k-len(bytes)
-        //var padding [add]byte
-        padding := make([]byte, add)
-        n_bytes := append(padding, bytes...)
-        return n_bytes
-    }
-    return bytes
 }
