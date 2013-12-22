@@ -73,8 +73,6 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
         sort.Sort(SubTrees(subtrees))
 
         if len(subtrees) > B {
-            sort.Sort(MinCost(subtrees[B]))
-            sort.Sort(MinCost(subtrees[B-1]))
             if subtrees[B][0].cost == subtrees[B-1][0].cost {
                 log.Print("Subtree collision. This might be a problem")
             }
