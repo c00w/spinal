@@ -24,8 +24,7 @@ func NewRNG(h hash.Hash, seed []byte) (r *RNG) {
     r.i = 3610617884
     r.h = h
     r.buffer = nil
-    r.seed = make([]byte, len(seed))
-    copy(r.seed, seed)
+    r.seed = seed
     return
 }
 
