@@ -1,1 +1,10 @@
 Spinal Coding Library for Go
+
+
+Profiling Instructions
+
+To generate the profile run
+go test -test.cpuprofile=cpu.prof
+
+To investigate it run
+go tool pprof spinal.test cpu.prof
