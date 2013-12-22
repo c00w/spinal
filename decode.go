@@ -83,12 +83,14 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
         rngoutput[i%blockcount] = append(rngoutput[i%blockcount], c)
     }
 
-    states := []decodeState{decodeState{0, make([]byte, h.Size()), nil}}
+    states := make([]decodeState, 0, B*d*(1 << 8*k))
+    states = append(states, decodeState{0, make([]byte, h.Size()), nil})
+
+    newstates := make([]decodeState, 0, B*d*(1 << 8*k))
 
     log.Print("Starting Decode")
     for i:= 0; i < len(rngoutput); i++ {
         log.Printf("#States = %d", len(states))
-        newstates := make([]decodeState, 0, len(states)*(1 << 8*k))
 
         for _, state := range states {
             //log.Print("State: ", state)
@@ -139,11 +141,12 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc[]byte) []byte {
             subtrees = subtrees[0:B]
         }
 
-        states = make([]decodeState, 0)
+        states = states[:0]
 
         for _, tree := range subtrees {
             states = append(states, tree...)
         }
+        newstates = newstates[:0]
     }
 
     sort.Sort(MinCost(states))
