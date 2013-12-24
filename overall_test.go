@@ -46,3 +46,36 @@ func TestInOutBigK(t *testing.T) {
 	}
 
 }
+
+func BenchmarkEncoding(b *testing.B) {
+	h := crc32.NewIEEE()
+	k := 1
+	input := make([]byte, b.N)
+    b.ResetTimer()
+	_, _ = Encode(k, h, input, len(input)*2)
+}
+
+func BenchmarkDecoding1k(b *testing.B) {
+	h := crc32.NewIEEE()
+	k := 1
+	d := 1
+	B := 4
+	input := make([]byte, b.N)
+	out, _ := Encode(k, h, input, len(input)*2)
+    b.ResetTimer()
+	_ = Decode(len(input), k, d, B, h, out)
+}
+
+func BenchmarkDecoding2k(b *testing.B) {
+    if (b.N < 2) {
+        b.N = 2
+    }
+	h := crc32.NewIEEE()
+	k := 2
+	d := 1
+	B := 4
+	input := make([]byte, b.N)
+	out, _ := Encode(k, h, input, len(input)*2)
+    b.ResetTimer()
+	_ = Decode(len(input), k, d, B, h, out)
+}

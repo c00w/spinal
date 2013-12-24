@@ -29,9 +29,7 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc []byte) []byte {
 	edge := make([]byte, k)
 	bedge := &BufAdd{edge, false}
 
-	log.Print("Starting Decode")
 	for i := 0; i < len(rngoutput); i++ {
-		log.Printf("#States = %d", len(states))
 
 		for _, state := range states {
 			//log.Print("State: ", state)
@@ -51,15 +49,13 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc []byte) []byte {
 						log.Print("Shenanigans")
 					}
 				}
-                x := make([]byte, 0, n)
+                x := make([]byte, 0, (i+1)*k)
                 x = append(x, state.message...)
                 x = append(x, edge...)
 
 				newstates = append(newstates, decodeState{d + state.cost, spline, x})
 			}
 		}
-
-		log.Printf("Exploded to %d newstates", len(newstates))
 
 		childcount := 1 << uint(8*k*(d-1))
 		subtrees := make([][]decodeState, 0, len(newstates)/childcount)
@@ -72,9 +68,6 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc []byte) []byte {
 		sort.Sort(SubTrees(subtrees))
 
 		if len(subtrees) > B {
-			if subtrees[B][0].cost == subtrees[B-1][0].cost {
-				log.Print("Subtree collision. This might be a problem")
-			}
 			subtrees = subtrees[0:B]
 		}
 
@@ -88,7 +81,6 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc []byte) []byte {
 
 	sort.Sort(MinCost(states))
 
-	log.Print("Final Result:", states[0])
 	return states[0].message
 
 }
