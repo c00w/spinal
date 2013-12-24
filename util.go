@@ -45,12 +45,11 @@ type RNG struct {
 	buffer []byte
 }
 
-func uint32tob(u uint32) (b []byte) {
-	b = make([]byte, 4)
-	for i, _ := range b {
-		b[i] = byte(u >> uint(i) * 8)
+func uint32tob(u uint32, b []byte) []byte {
+	for i := 0; i < 4; i++ {
+		b = append(b, byte(u>>uint(i)*8))
 	}
-	return
+	return b
 }
 
 func NewRNG(h hash.Hash, seed []byte) (r *RNG) {
@@ -64,13 +63,13 @@ func NewRNG(h hash.Hash, seed []byte) (r *RNG) {
 
 func (r *RNG) Next() (b byte) {
 	if len(r.buffer) > 0 {
-		b = r.buffer[0]
-		r.buffer = r.buffer[1:len(r.buffer)]
+		b = r.buffer[len(r.buffer)-1]
+		r.buffer = r.buffer[:len(r.buffer)-1]
 		return
 	} else {
 		r.h.Reset()
 		r.h.Write(r.seed)
-		r.h.Write(uint32tob(r.i))
+		r.h.Write(uint32tob(r.i, r.buffer))
 		r.buffer = r.h.Sum(r.buffer[:0])
 		r.i += 3243335647
 		return r.Next()

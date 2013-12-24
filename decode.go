@@ -49,9 +49,9 @@ func Decode(n int, k int, d int, B int, h hash.Hash, enc []byte) []byte {
 						log.Print("Shenanigans")
 					}
 				}
-                x := make([]byte, 0, (i+1)*k)
-                x = append(x, state.message...)
-                x = append(x, edge...)
+				x := make([]byte, 0, (i+1)*k)
+				x = append(x, state.message...)
+				x = append(x, edge...)
 
 				newstates = append(newstates, decodeState{d + state.cost, spline, x})
 			}
