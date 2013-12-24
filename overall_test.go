@@ -66,6 +66,18 @@ func BenchmarkDecoding1k(b *testing.B) {
 	_ = Decode(len(input), k, d, B, h, out)
 }
 
+func BenchmarkDecoding1k15R(b *testing.B) {
+	h := crc32.NewIEEE()
+	k := 1
+	d := 1
+	B := 4
+	input := make([]byte, b.N)
+	out, _ := Encode(k, h, input, len(input)/2 * 3)
+	b.ResetTimer()
+	_ = Decode(len(input), k, d, B, h, out)
+}
+
+
 func BenchmarkDecoding2k(b *testing.B) {
 	if b.N < 2 {
 		b.N = 2
